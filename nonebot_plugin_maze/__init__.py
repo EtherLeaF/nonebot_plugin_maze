@@ -85,8 +85,12 @@ async def _handle_maze(event: MessageEvent, state: T_State = State()):
             t = 1
         else:
             op, t = op[0], int(op[1:])
+
         if t > 10:
             await maze_game.reject("你确定要一直往同一个方向走这么远吗？操作撞墙也是会计入步数的哦", at_sender=True)
+        elif t <= 0:
+            await maze_game.reject(f"暂时不知道怎么走{t}步呢...", at_sender=True)
+
         ops.append([op, t])
         cnt += t
         if cnt > 50:
