@@ -306,7 +306,7 @@ class Maze:
         colors = ['#525288', '#F2F2F2', '#525288', '#F2F2F2', '#525288', '#F2F2F2', '#525288', '#F2F2F2']
         # attribute 'level' here is reserved for further development, such as extra levels
         # user's vision will be restricted in the maze in higher levels (darker!)
-        # you can attempt to understand this idea from reading Line315-Line323, Line337-340 and Line386-396
+        # you can attempt to understand this idea from reading Line315-Line323, Line340-343 and Line389-399
         if self.level > 2:
             colors = ['#232323', '#252525', '#2a2a32', '#424242', '#434368', '#b4b4b4', '#525288', '#F2F2F2']
 
@@ -324,11 +324,14 @@ class Maze:
 
                 if matrix[r][c] == 0:
                     await self._draw_cell(draw, r, c, color[1])
+
                 elif matrix[r][c] == -1:
                     await self._draw_cell(draw, r, c, color[0])
+
                 elif matrix[r][c] == 1:
                     await self._draw_cell(draw, r, c, color[1])
                     await self._draw_path(draw, matrix, r, c, '#bc84a8', '#bc84a8')
+
                 elif matrix[r][c] == 2:
                     await self._draw_cell(draw, r, c, color[1])
                     await self._draw_path(draw, matrix, r, c, '#ee3f4d', '#ee3f4d')
