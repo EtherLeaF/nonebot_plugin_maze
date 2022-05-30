@@ -4,14 +4,12 @@ import random
 import numpy as np
 from PIL.ImageDraw import ImageDraw
 
-from nonebot import get_driver
+from asyncer import asyncify
 
-from .config import Config
+from .utils import load_config
 
 
-maze_config = Config.parse_obj(get_driver().config.dict())
-MIN_MAZE_ROWS, MAX_MAZE_ROWS = maze_config.min_maze_rows, maze_config.max_maze_rows
-MIN_MAZE_COLS, MAX_MAZE_COLS = maze_config.min_maze_cols, maze_config.max_maze_cols
+MIN_MAZE_ROWS, MAX_MAZE_ROWS, MIN_MAZE_COLS, MAX_MAZE_COLS = load_config()[-4:]
 
 
 # Implementation of Disjoint Set Union (DSU)
@@ -50,8 +48,8 @@ class Maze:
     # mark wall as -1, pathway as 0, possible solution as 1, user's current path as 2 in matrix
     # all maze-generating methods initialize entrance and exit to 0
 
-    # Using DFS algorithm
-    async def generate_matrix_dfs(self):
+    # Maze-generating methods below
+    def _generate_matrix_dfs(self):
         # std::memset(matrix, -1, height * width * sizeof(numpy.float64)); (bushi
         self.matrix = -np.ones((self.height, self.width))
         self.matrix[self.start[0], self.start[1]] = 0
@@ -93,8 +91,7 @@ class Maze:
         dfs(self.destination[0], self.destination[1] - 1)
         self.matrix[self.start[0], self.start[1] + 1] = 0
 
-    # Using Prim algorithm
-    async def generate_matrix_prim(self):
+    def _generate_matrix_prim(self):
         self.matrix = -np.ones((self.height, self.width))
 
         def check(row, col):
@@ -129,8 +126,7 @@ class Maze:
         self.matrix[self.start[0], self.start[1]] = 0
         self.matrix[self.destination[0], self.destination[1]] = 0
 
-    # Using Kruskal algorithm
-    async def generate_matrix_kruskal(self):
+    def _generate_matrix_kruskal(self):
         self.matrix = -np.ones((self.height, self.width))
 
         def check(row, col):
@@ -186,10 +182,24 @@ class Maze:
         self.matrix[self.start[0], self.start[1]] = 0
         self.matrix[self.destination[0], self.destination[1]] = 0
 
-    # Maze-solving method
+    # main generating entry
+    @asyncify
+    def generate(self, algorithm):
+        if algorithm == 'dfs':
+            self._generate_matrix_dfs()
 
-    # Using DFS algorithm
-    async def find_path_dfs(self, destination):
+        elif algorithm == 'prim':
+            self._generate_matrix_prim()
+
+        elif algorithm == 'kruskal':
+            self._generate_matrix_kruskal()
+
+        else:
+            raise ValueError("Invalid generating method!")
+
+    # Maze-solving method below
+    @asyncify
+    def _find_path_dfs(self, destination):
         visited = [[0 for i in range(self.width)] for j in range(self.height)]
 
         def dfs(path):
@@ -210,91 +220,95 @@ class Maze:
         dfs([[self.start[0], self.start[1]]])
 
     # Display the maze
-    async def _draw_cell(self, draw: ImageDraw, row, col, color="#F2F2F2"):
+    def _draw_cell(self, draw: ImageDraw, row, col, color="#F2F2F2"):
         x0, y0 = col * self.cell_width, row * self.cell_width
         x1, y1 = x0 + self.cell_width, y0 + self.cell_width
         draw.rectangle((x0, y0, x1, y1), fill=color, outline=color, width=0)
 
-    async def _draw_path(self, draw: ImageDraw, matrix, row, col, color, line_color):
+    def _draw_path(self, draw: ImageDraw, matrix, row, col, color, line_color):
+        cell_width = self.cell_width
+
         # col
         if row + 1 < self.height and matrix[row - 1][col] >= 1 and matrix[row + 1][col] >= 1:
-            x0, y0 = col * self.cell_width + 2 * self.cell_width / 5, row * self.cell_width
-            x1, y1 = x0 + self.cell_width / 5, y0 + self.cell_width
+            x0, y0 = col * cell_width + 2 * cell_width / 5, row * cell_width
+            x1, y1 = x0 + cell_width / 5, y0 + cell_width
 
         # row
         elif col + 1 < self.width and matrix[row][col - 1] >= 1 and matrix[row][col + 1] >= 1:
-            x0, y0 = col * self.cell_width, row * self.cell_width + 2 * self.cell_width / 5
-            x1, y1 = x0 + self.cell_width, y0 + self.cell_width / 5
+            x0, y0 = col * cell_width, row * cell_width + 2 * cell_width / 5
+            x1, y1 = x0 + cell_width, y0 + cell_width / 5
 
         # upper left
         elif col + 1 < self.width and row + 1 < self.height and matrix[row][col + 1] >= 1 and matrix[row + 1][col] >= 1:
-            x0, y0 = col * self.cell_width + 2 * self.cell_width / 5, row * self.cell_width + 2 * self.cell_width / 5
-            x1, y1 = x0 + 3 * self.cell_width / 5, y0 + self.cell_width / 5
+            x0, y0 = col * cell_width + 2 * cell_width / 5, row * cell_width + 2 * cell_width / 5
+            x1, y1 = x0 + 3 * cell_width / 5, y0 + cell_width / 5
 
             draw.rectangle((x0, y0, x1, y1), fill=color, outline=line_color, width=0)
 
-            x0, y0 = col * self.cell_width + 2 * self.cell_width / 5, row * self.cell_width + 2 * self.cell_width / 5
-            x1, y1 = x0 + self.cell_width / 5, y0 + 3 * self.cell_width / 5
+            x0, y0 = col * cell_width + 2 * cell_width / 5, row * cell_width + 2 * cell_width / 5
+            x1, y1 = x0 + cell_width / 5, y0 + 3 * cell_width / 5
 
         # upper right
         elif row + 1 < self.height and matrix[row][col - 1] >= 1 and matrix[row + 1][col] >= 1:
-            x0, y0 = col * self.cell_width, row * self.cell_width + 2 * self.cell_width / 5
-            x1, y1 = x0 + 3 * self.cell_width / 5, y0 + self.cell_width / 5
+            x0, y0 = col * cell_width, row * cell_width + 2 * cell_width / 5
+            x1, y1 = x0 + 3 * cell_width / 5, y0 + cell_width / 5
 
             draw.rectangle((x0, y0, x1, y1), fill=color, outline=line_color, width=0)
 
-            x0, y0 = col * self.cell_width + 2 * self.cell_width / 5, row * self.cell_width + 2 * self.cell_width / 5
-            x1, y1 = x0 + self.cell_width / 5, y0 + 3 * self.cell_width / 5
+            x0, y0 = col * cell_width + 2 * cell_width / 5, row * cell_width + 2 * cell_width / 5
+            x1, y1 = x0 + cell_width / 5, y0 + 3 * cell_width / 5
 
         # lower left
         elif col + 1 < self.width and matrix[row - 1][col] >= 1 and matrix[row][col + 1] >= 1:
-            x0, y0 = col * self.cell_width + 2 * self.cell_width / 5, row * self.cell_width
-            x1, y1 = x0 + self.cell_width / 5, y0 + 3 * self.cell_width / 5
+            x0, y0 = col * cell_width + 2 * cell_width / 5, row * cell_width
+            x1, y1 = x0 + cell_width / 5, y0 + 3 * cell_width / 5
 
             draw.rectangle((x0, y0, x1, y1), fill=color, outline=line_color, width=0)
 
-            x0, y0 = col * self.cell_width + 2 * self.cell_width / 5, row * self.cell_width + 2 * self.cell_width / 5
-            x1, y1 = x0 + 3 * self.cell_width / 5, y0 + self.cell_width / 5
+            x0, y0 = col * cell_width + 2 * cell_width / 5, row * cell_width + 2 * cell_width / 5
+            x1, y1 = x0 + 3 * cell_width / 5, y0 + cell_width / 5
 
         # lower right
         elif matrix[row - 1][col] >= 1 and matrix[row][col - 1] >= 1:
-            x0, y0 = col * self.cell_width, row * self.cell_width + 2 * self.cell_width / 5
-            x1, y1 = x0 + 3 * self.cell_width / 5, y0 + self.cell_width / 5
+            x0, y0 = col * cell_width, row * cell_width + 2 * cell_width / 5
+            x1, y1 = x0 + 3 * cell_width / 5, y0 + cell_width / 5
 
             draw.rectangle((x0, y0, x1, y1), fill=color, outline=line_color, width=0)
 
-            x0, y0 = col * self.cell_width + 2 * self.cell_width / 5, row * self.cell_width
-            x1, y1 = x0 + self.cell_width / 5, y0 + 3 * self.cell_width / 5
+            x0, y0 = col * cell_width + 2 * cell_width / 5, row * cell_width
+            x1, y1 = x0 + cell_width / 5, y0 + 3 * cell_width / 5
 
         else:
-            x0, y0 = col * self.cell_width + 2 * self.cell_width / 5, row * self.cell_width + 2 * self.cell_width / 5
-            x1, y1 = x0 + self.cell_width / 5, y0 + self.cell_width / 5
+            x0, y0 = col * cell_width + 2 * cell_width / 5, row * cell_width + 2 * cell_width / 5
+            x1, y1 = x0 + cell_width / 5, y0 + cell_width / 5
 
         draw.rectangle((x0, y0, x1, y1), fill=color, outline=line_color, width=0)
 
-    async def draw_maze(self, draw: ImageDraw, matrix, path, moves):
+    @asyncify
+    def draw_maze(self, draw: ImageDraw, matrix, path, moves):
         for r in range(self.height):
             for c in range(self.width):
                 if matrix[r][c] == 0:
-                    await self._draw_cell(draw, r, c)
+                    self._draw_cell(draw, r, c)
 
                 elif matrix[r][c] == -1:
-                    await self._draw_cell(draw, r, c, '#525288')
+                    self._draw_cell(draw, r, c, '#525288')
 
                 elif matrix[r][c] == 1:
-                    await self._draw_cell(draw, r, c)
-                    await self._draw_path(draw, matrix, r, c, '#bc84a8', '#bc84a8')
+                    self._draw_cell(draw, r, c)
+                    self._draw_path(draw, matrix, r, c, '#bc84a8', '#bc84a8')
 
                 elif matrix[r][c] == 2:
-                    await self._draw_cell(draw, r, c)
-                    await self._draw_path(draw, matrix, r, c, '#ee3f4d', '#ee3f4d')
+                    self._draw_cell(draw, r, c)
+                    self._draw_path(draw, matrix, r, c, '#ee3f4d', '#ee3f4d')
 
         for p in path:
             matrix[p[0]][p[1]] = 1
         for move in moves:
             matrix[move[0]][move[1]] = 2
 
-    async def _update_maze(self, draw: ImageDraw, matrix, path, moves):
+    @asyncify
+    def _update_maze(self, draw: ImageDraw, matrix, path, moves):
         matrix = copy.copy(matrix)
 
         for p in path:
@@ -303,11 +317,10 @@ class Maze:
             matrix[move[0]][move[1]] = 2
 
         row, col = self.movement_list[-1]
-        colors = ['#525288', '#F2F2F2', '#525288', '#F2F2F2', '#525288', '#F2F2F2', '#525288', '#F2F2F2']
-        # attribute 'level' here is reserved for further development, such as extra levels
-        # user's vision will be restricted in the maze in higher levels (darker!)
-        # you can attempt to understand this idea from reading Line315-Line323, Line340-343 and Line389-399
-        if self.level > 2:
+
+        if self.level <= 2:
+            colors = ['#525288', '#F2F2F2', '#525288', '#F2F2F2', '#525288', '#F2F2F2', '#525288', '#F2F2F2']
+        else:
             colors = ['#232323', '#252525', '#2a2a32', '#424242', '#434368', '#b4b4b4', '#525288', '#F2F2F2']
 
         for r in range(self.height):
@@ -323,18 +336,18 @@ class Maze:
                     color = colors[6:8]
 
                 if matrix[r][c] == 0:
-                    await self._draw_cell(draw, r, c, color[1])
+                    self._draw_cell(draw, r, c, color[1])
 
                 elif matrix[r][c] == -1:
-                    await self._draw_cell(draw, r, c, color[0])
+                    self._draw_cell(draw, r, c, color[0])
 
                 elif matrix[r][c] == 1:
-                    await self._draw_cell(draw, r, c, color[1])
-                    await self._draw_path(draw, matrix, r, c, '#bc84a8', '#bc84a8')
+                    self._draw_cell(draw, r, c, color[1])
+                    self._draw_path(draw, matrix, r, c, '#bc84a8', '#bc84a8')
 
                 elif matrix[r][c] == 2:
-                    await self._draw_cell(draw, r, c, color[1])
-                    await self._draw_path(draw, matrix, r, c, '#ee3f4d', '#ee3f4d')
+                    self._draw_cell(draw, r, c, color[1])
+                    self._draw_path(draw, matrix, r, c, '#ee3f4d', '#ee3f4d')
 
     def _check_reach(self):
         # return (is_reached: bool, step_used: int)
@@ -399,5 +412,5 @@ class Maze:
         #     self.level += 1
 
     async def show_answer(self, draw: ImageDraw):
-        await self.find_path_dfs(self.destination)
+        await self._find_path_dfs(self.destination)
         await self._update_maze(draw, self.matrix, self.path, self.movement_list)
