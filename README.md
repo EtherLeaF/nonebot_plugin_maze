@@ -30,6 +30,10 @@ nb plugin install nonebot_plugin_maze
 pip install nonebot_plugin_maze
 ```
 
+## 获取插件帮助
+
+- 可选择接入[nonebot-plugin-help](https://github.com/XZhouQD/nonebot-plugin-help)以便用户获取插件相关信息与用法
+
 ## 如何使用
 
 ### .env 配置项
@@ -59,7 +63,7 @@ default_maze_cols = 27        # 迷宫默认生成列数
 使用以下命令触发，需加上命令前缀！
 
 ```
-maze [-r --rols <ROWS>] [-c --cols <COLUMNS>] [-m --method <ALGORITHM>]
+maze [-r --rows <ROWS>] [-c --cols <COLUMNS>] [-m --method <ALGORITHM>]
 ```
 
 - 可使用```-r```规定迷宫的行数，```-c```规定迷宫的列数
@@ -81,7 +85,7 @@ maze [-r --rols <ROWS>] [-c --cols <COLUMNS>] [-m --method <ALGORITHM>]
 
     - 注意：单个操作中步数大于10是不合法的，例如```D11```，~~```R18```~~
     - 识别操作时对大小写不敏感
-    - 为避免频繁数格子的问题，我们定义```一步```为向该方向的路径一直走，直到遇见死路或走到岔路口，<u>有可能拐弯</u>。
+    - 为避免频繁数格子的问题，我们定义```一步```为沿该方向的路径一直走，直到遇见死路或走到岔路口，<u>有可能拐弯</u>。
 
 有了操作是什么，我们就可以定义操作序列了。
 
