@@ -38,7 +38,7 @@ class Maze:
         self.cell_width = cell_width
         self.start = [1, 0]
         self.movement_list = [self.start]
-        self.click_counter = 0
+        self.movement_counter = 0
         self.destination = [self.height - 2, self.width - 1]
         self.matrix = None
         self.path = []
@@ -353,13 +353,13 @@ class Maze:
         # return (is_reached: bool, step_used: int)
         if self.movement_list[-1] == self.destination:
             # self.next_maze_flag = True
-            return True, self.click_counter
+            return True, self.movement_counter
         else:
-            return False, self.click_counter
+            return False, self.movement_counter
 
     async def event_handler(self, op, draw: ImageDraw):
         if not self.next_maze_flag:
-            self.click_counter += 1
+            self.movement_counter += 1
             cur_pos = self.movement_list[-1]
             ops = {'L': [0, -1], 'R': [0, 1], 'U': [-1, 0], 'D': [1, 0]}
             r_, c_ = cur_pos[0] + ops[op][0], cur_pos[1] + ops[op][1]
@@ -402,9 +402,9 @@ class Maze:
         # else:
         #     self.next_maze_flag = False
         #     movement_list = [self.start]
-        #     self.click_counter = 0
+        #     self.movement_counter = 0
         #
-        #     await self.generate_matrix_kruskal()
+        #     await self._generate_matrix_kruskal()
         #     self.path = []
         #
         #     await self.draw_maze(draw, self.matrix, self.path, movement_list)
