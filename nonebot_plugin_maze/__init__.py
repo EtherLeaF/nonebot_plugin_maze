@@ -6,12 +6,13 @@ from PIL import Image, ImageDraw
 from nonebot.plugin import on_shell_command
 from nonebot.typing import T_State
 from nonebot.params import State, ShellCommandArgs
-from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import Adapter as OneBotV11Adapter, MessageEvent, MessageSegment
 
 from .Maze import Maze
-from .utils import maze_args_parser, analyze_op_sequence
+from .utils import maze_args_parser, analyze_op_sequence, load_config
 
 
+DEFAULT_ROWS, DEFAULT_COLS = load_config()[:2]
 maze_game = on_shell_command("maze", priority=30, parser=maze_args_parser, block=True)
 
 
@@ -72,3 +73,30 @@ async def _handle_maze(event: MessageEvent, state: T_State = State()):
                                MessageSegment.image(buf.getvalue()), at_sender=True)
     else:
         await maze_game.reject(MessageSegment.image(buf), at_sender=True)
+
+
+# —————————— Metadata below —————————— #
+__plugin_name__ = __help_plugin_name__ = "走迷宫"
+__plugin_version__ = __help_version__ = "0.2.1"
+__plugin_author__ = "EtherLeaF <thetapilla@gmail.com>"
+
+__plugin_adapters__ = [OneBotV11Adapter]
+
+__plugin_des__ = "和机器人一起走迷宫吧！"
+__plugin_usage__ = __usage__ = f'''
+发送以下命令触发：
+maze [-r --rows <ROWS>] [-c --cols <COLUMNS>] [-m --method <ALGORITHM>]
+
+-r: 可选参数，可指定迷宫行数，默认为{DEFAULT_ROWS}
+-c：可选参数，可指定迷宫列数，默认为{DEFAULT_COLS}
+-m：可选参数，可指定迷宫生成算法，目前支持DFS,Prim,Kruskal三种，默认为Kruskal
+
+通过持续发送若干操作序列解开迷宫，操作序列由若干操作组成
+操作格式：U(上)/D(下)L(左)/R(右)+步数，步数可留空表示1步
+    例如：R, D3, L1
+操作序列示例：R2D3RU2LD2R4
+在游戏中，我们定义1步为沿该方向的路径一直走，直到遇见死路或走到岔路口，有可能拐弯。
+
+游戏过程中不想玩了？
+游戏过程中可随时发送 结束/quit 以结束游戏并查看参考解法
+'''
