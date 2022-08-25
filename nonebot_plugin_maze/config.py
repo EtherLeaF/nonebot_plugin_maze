@@ -8,3 +8,4 @@ class Config(BaseModel, extra=Extra.ignore):
     max_maze_cols: int = 35
     default_maze_rows: int = 18
     default_maze_cols: int = 27
+    maze_movement_key: str = "ULDR"

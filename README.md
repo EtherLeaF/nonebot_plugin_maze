@@ -1,11 +1,13 @@
-<p align="center">
-  <a href="https://v2.nonebot.dev/"><img src="https://v2.nonebot.dev/logo.png" width="200" height="200" alt="nonebot"></a>
-</p>
+<div align="center">
+  <a href="https://v2.nonebot.dev/store"><img src="https://s2.loli.net/2022/06/16/opBDE8Swad5rU3n.png" width="180" height="180" alt="NoneBotPluginLogo"></a>
+  <br>
+  <p><img src="https://s2.loli.net/2022/06/16/xsVUGRrkbn1ljTD.png" width="240" alt="NoneBotPluginText"></p>
+</div>
 
 <div align="center">
-  
+
 # Nonebot_Plugin_Maze
-  
+
 _✨ 基于OneBot适配器的[NoneBot2](https://v2.nonebot.dev/)交互式解迷宫插件 ✨_
   
 </div>
@@ -13,7 +15,7 @@ _✨ 基于OneBot适配器的[NoneBot2](https://v2.nonebot.dev/)交互式解迷�
 ## 功能
 
 - 可指定大小与算法生成迷宫
-- 以文字消息作为交互形式解迷宫
+- 发送方向与步数解迷宫
 - 游戏过程中可随时退出
 
 ## 安装
@@ -32,7 +34,7 @@ pip install nonebot_plugin_maze
 
 ## 获取插件帮助
 
-- 可选择接入[nonebot-plugin-help](https://github.com/XZhouQD/nonebot-plugin-help)以便用户获取插件相关信息与用法
+- 可选择接入[nonebot-plugin-PicMenu](https://github.com/hamo-reid/nonebot_plugin_PicMenu)以便用户获取插件相关信息与用法。
 
 ## 如何使用
 
@@ -45,6 +47,7 @@ min_maze_cols = 13            # 迷宫最小列数
 max_maze_cols = 35            # 迷宫最大列数
 default_maze_rows = 18        # 迷宫默认生成行数
 default_maze_cols = 27        # 迷宫默认生成列数
+maze_movement_key = "ULDR"    # 迷宫移动方向键
 ```
 
 各配置项的含义与默认值如上。
@@ -57,6 +60,9 @@ default_maze_cols = 27        # 迷宫默认生成列数
 - 同时，建议不要把最小行数/列数设置为小于10的值，以免引发未知错误
 
   - 也建议不要把最大行数/列数设置过大，例如50以上，第一是因为资源占用问题，~~第二是因为生成个那么大的迷宫有谁愿意玩啊喂~~
+
+
+- 可遵循```上左下右```的格式修改移动方向键，例如```WASD```，规定方向键***只能为字母***。
 
 ### 开始游戏
 
@@ -74,25 +80,20 @@ maze [-r --rows <ROWS>] [-c --cols <COLUMNS>] [-m --method <ALGORITHM>]
 
 ### 如何进行游戏
 
-~~在用户发送指令获取到初始迷宫后，我们终于可以开始愉快地游戏了！~~
+~~在用户发送指令获取到初始迷宫后，我们终于可以愉快地开始游戏了！~~
 
-用户需要持续发送操作序列以在迷宫中移动，直到解开迷宫。
+用户需要持续发送***操作序列***以在迷宫中移动，直到解开迷宫。
 
-至于操作序列是什么，让我们先来定义操作。
+要知道***操作序列***是什么，首先要定义***操作***。
+
+***注：以下定义使用默认参数```maze_movement_key = "ULDR"```***
 
 - 我们定义一个操作的格式为```方向+步数```，用正则表达就是```[UDLR]\d*```，用阳间方法表达的话就是```U(up)|D(down)|L(left)|R(right) + steps```，```步数```可以留空以表示一步。
 - 例如```R```，```D3```，```L1```就是几个合法的操作，分别表示右移一步，下移三步，左移一步。
 
-    - 注意：单个操作中步数大于10是不合法的，例如```D11```，~~```R18```~~
-    - 识别操作时对大小写不敏感
-    - 为避免频繁数格子的问题，我们定义```一步```为沿该方向的路径一直走，直到遇见死路或走到岔路口，<u>有可能拐弯</u>。
+    - 为避免频繁数格子的问题，我们定义```一步```为沿该方向的路径***一直走***，直到遇见死路或走到岔路口。
 
-有了操作是什么，我们就可以定义操作序列了。
-
-- 顾名思义，操作序列就是```n(n≥1)```个操作组合而成的序列，以字符串的形式表达。
-- 例如```R2D3RU2LD2R4```就是一个合法的操作序列，含义不必赘述。
-
-    - 注意：单个操作序列中所有操作步数总和不可大于50，例如```R10D10R10U10L10D```是不合法的。
+***有了操作是什么，我们定义操作序列为```n(n≥1)```个操作组合而成的字符串。***
 
 游戏中觉得太耗时间？迷宫太难解不出来？不想玩了？
 

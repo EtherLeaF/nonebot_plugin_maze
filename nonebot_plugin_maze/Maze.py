@@ -9,7 +9,7 @@ from asyncer import asyncify
 from .utils import load_config
 
 
-MIN_MAZE_ROWS, MAX_MAZE_ROWS, MIN_MAZE_COLS, MAX_MAZE_COLS = load_config()[-4:]
+MIN_MAZE_ROWS, MAX_MAZE_ROWS, MIN_MAZE_COLS, MAX_MAZE_COLS, MAZE_MOVEMENT_KEY = load_config()[-5:]
 
 
 # Implementation of Disjoint Set Union (DSU)
@@ -51,10 +51,10 @@ class Maze:
     # Maze-generating methods below
     def _generate_matrix_dfs(self):
         # std::memset(matrix, -1, height * width * sizeof(numpy.float64)); (bushi
-        self.matrix = -np.ones((self.height, self.width))
+        self.matrix = -np.ones((self.height, self.width), dtype=int)
         self.matrix[self.start[0], self.start[1]] = 0
         self.matrix[self.destination[0], self.destination[1]] = 0
-        visit_flag = [[0 for i in range(self.width)] for j in range(self.height)]
+        visit_flag = np.zeros((self.height, self.width), dtype=int)
 
         def check(row, col, row_, col_):
             temp_sum = 0
@@ -76,9 +76,11 @@ class Maze:
 
             for d in directions:
                 row_, col_ = row + d[0], col + d[1]
-                if 0 < row_ < self.height - 1 and 0 < col_ < self.width - 1 \
-                        and visit_flag[row_][col_] == 0 \
-                        and check(row, col, row_, col_):
+                if (
+                    0 < row_ < self.height - 1 and 0 < col_ < self.width - 1
+                    and visit_flag[row_][col_] == 0
+                    and check(row, col, row_, col_)
+                ):
                     if row == row_:
                         visit_flag[row][min(col, col_) + 1] = 1
                         self.matrix[row][min(col, col_) + 1] = 0
@@ -92,7 +94,7 @@ class Maze:
         self.matrix[self.start[0], self.start[1] + 1] = 0
 
     def _generate_matrix_prim(self):
-        self.matrix = -np.ones((self.height, self.width))
+        self.matrix = -np.ones((self.height, self.width), dtype=int)
 
         def check(row, col):
             temp_sum = 0
@@ -127,7 +129,7 @@ class Maze:
         self.matrix[self.destination[0], self.destination[1]] = 0
 
     def _generate_matrix_kruskal(self):
-        self.matrix = -np.ones((self.height, self.width))
+        self.matrix = -np.ones((self.height, self.width), dtype=int)
 
         def check(row, col):
             ans, counter = [], 0
@@ -195,12 +197,12 @@ class Maze:
             self._generate_matrix_kruskal()
 
         else:
-            raise ValueError("Invalid generating method!")
+            raise ValueError("不支持的迷宫生成算法！")
 
     # Maze-solving method below
     @asyncify
     def _find_path_dfs(self, destination):
-        visited = [[0 for i in range(self.width)] for j in range(self.height)]
+        visited = np.zeros((self.height, self.width), dtype=int)
 
         def dfs(path):
             visited[path[-1][0]][path[-1][1]] = 1
@@ -212,9 +214,11 @@ class Maze:
             for d in [[0, 1], [0, -1], [1, 0], [-1, 0]]:
                 row_, col_ = path[-1][0] + d[0], path[-1][1] + d[1]
 
-                if 0 < row_ < self.height - 1 and 0 < col_ < self.width \
-                        and visited[row_][col_] == 0 \
-                        and self.matrix[row_][col_] == 0:
+                if (
+                    0 < row_ < self.height - 1 and 0 < col_ < self.width
+                    and visited[row_][col_] == 0
+                    and self.matrix[row_][col_] == 0
+                ):
                     dfs(path + [[row_, col_]])
 
         dfs([[self.start[0], self.start[1]]])
@@ -361,7 +365,7 @@ class Maze:
         if not self.next_maze_flag:
             self.movement_counter += 1
             cur_pos = self.movement_list[-1]
-            ops = {'L': [0, -1], 'R': [0, 1], 'U': [-1, 0], 'D': [1, 0]}
+            ops = dict(zip(MAZE_MOVEMENT_KEY, [[-1, 0], [0, -1], [1, 0], [0, 1]]))
             r_, c_ = cur_pos[0] + ops[op][0], cur_pos[1] + ops[op][1]
 
             if len(self.movement_list) > 1 and [r_, c_] == self.movement_list[-2]:

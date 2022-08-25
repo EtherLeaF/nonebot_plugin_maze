@@ -11,15 +11,27 @@ def load_config():
     DEFAULT_MAZE_ROWS, DEFAULT_MAZE_COLS = maze_config.default_maze_rows, maze_config.default_maze_cols
     MIN_MAZE_ROWS, MAX_MAZE_ROWS = maze_config.min_maze_rows, maze_config.max_maze_rows
     MIN_MAZE_COLS, MAX_MAZE_COLS = maze_config.min_maze_cols, maze_config.max_maze_cols
+    MAZE_MOVEMENT_KEY = maze_config.maze_movement_key
 
     assert (
-            MIN_MAZE_ROWS <= DEFAULT_MAZE_ROWS <= MAX_MAZE_ROWS and
-            MIN_MAZE_COLS <= DEFAULT_MAZE_COLS <= MAX_MAZE_COLS
+        MIN_MAZE_ROWS <= DEFAULT_MAZE_ROWS <= MAX_MAZE_ROWS and
+        MIN_MAZE_COLS <= DEFAULT_MAZE_COLS <= MAX_MAZE_COLS
     ), "设置的迷宫行列数默认值需介于设置的迷宫行列数的最小值与最大值之间！"
-    return DEFAULT_MAZE_ROWS, DEFAULT_MAZE_COLS, MIN_MAZE_ROWS, MAX_MAZE_ROWS, MIN_MAZE_COLS, MAX_MAZE_COLS
+    assert (
+        MAZE_MOVEMENT_KEY.isalpha()
+        and len(MAZE_MOVEMENT_KEY) == 4
+    ), "需将迷宫移动键设置为四个字母！"
+
+    return (
+        DEFAULT_MAZE_ROWS, DEFAULT_MAZE_COLS,
+        MIN_MAZE_ROWS, MAX_MAZE_ROWS,
+        MIN_MAZE_COLS, MAX_MAZE_COLS,
+        MAZE_MOVEMENT_KEY.upper()
+    )
 
 
 default_rows, default_cols = load_config()[:2]
+MAZE_MOVEMENT_KEY = load_config()[-1]
 maze_args_parser = ArgumentParser()
 maze_args_parser.add_argument('-r', '--rows', type=int, default=default_rows)
 maze_args_parser.add_argument('-c', '--cols', type=int, default=default_cols)
@@ -27,7 +39,7 @@ maze_args_parser.add_argument('-m', '--method', type=str, default='kruskal')
 
 
 def analyze_op_sequence(op_seq_str: str):
-    parsed_seq = re.findall(r"[UDLR]-?\d*", op_seq_str.upper())
+    parsed_seq = re.findall(rf"[{MAZE_MOVEMENT_KEY}]-?\d*", op_seq_str.upper())
     assert parsed_seq, "未检测到合法的操作序列！"
 
     op_seq = []

@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "nonebot_plugin_maze"
-version = "0.2.1"
+version = "0.2.2"
 description = "NoneBot2交互式解迷宫插件"
-authors = ["EtherLeaF <thetapilla@gmail.com>"]
+authors = ["T_EtherLeaF <thetapilla@gmail.com>"]
 license = "MIT License"
 
 [tool.poetry.dependencies]
