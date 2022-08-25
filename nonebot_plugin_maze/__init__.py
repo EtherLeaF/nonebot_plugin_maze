@@ -13,7 +13,15 @@ from nonebot.adapters.onebot.v11 import MessageEvent
 
 from .__main__ import init_maze, handle_maze
 from .utils import maze_args_parser
-from .metadata import *
+from .metadata import (
+    __plugin_name__, __help_plugin_name__,
+    __plugin_des__,
+    __plugin_version__, __help_version__,
+    __plugin_author__,
+    __plugin_adapters__,
+    __plugin_usage__, __usage__,
+    __plugin_meta__
+)
 
 
 maze_game = on_shell_command("maze", priority=30, parser=maze_args_parser, block=True)
