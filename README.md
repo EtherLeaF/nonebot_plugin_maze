@@ -41,13 +41,13 @@ pip install nonebot_plugin_maze
 ### .env 配置项
 
 ```ini
-min_maze_rows:int = 13            # 迷宫最小行数
-max_maze_rows:int = 35            # 迷宫最大行数
-min_maze_cols:int = 13            # 迷宫最小列数
-max_maze_cols:int = 35            # 迷宫最大列数
-default_maze_rows:int = 18        # 迷宫默认生成行数
-default_maze_cols:int = 27        # 迷宫默认生成列数
-maze_movement_key:str = "ULDR"    # 迷宫移动方向键
+min_maze_rows: int = 13            # 迷宫最小行数
+max_maze_rows: int = 35            # 迷宫最大行数
+min_maze_cols: int = 13            # 迷宫最小列数
+max_maze_cols: int = 35            # 迷宫最大列数
+default_maze_rows: int = 18        # 迷宫默认生成行数
+default_maze_cols: int = 27        # 迷宫默认生成列数
+maze_movement_key: str = "ULDR"    # 迷宫移动方向键
 ```
 
 各配置项的含义与默认值如上。
