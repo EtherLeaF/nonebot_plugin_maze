@@ -20,7 +20,7 @@ def load_config():
     assert (
         MAZE_MOVEMENT_KEY.isalpha()
         and len(MAZE_MOVEMENT_KEY) == 4
-    ), "需将迷宫移动键设置为四个字母！"
+    ), "需将迷宫方向键设置为四个字母！"
 
     return (
         DEFAULT_MAZE_ROWS, DEFAULT_MAZE_COLS,
