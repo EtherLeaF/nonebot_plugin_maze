@@ -4,12 +4,12 @@ from nonebot.adapters.onebot.v11 import Adapter as OneBotV11Adapter
 from .utils import load_config
 
 DEFAULT_ROWS, DEFAULT_COLS = load_config()[:2]
-keys = load_config()[-1]
+KEYS = load_config()[-1]
 
 
 # —————————— Metadata below —————————— #
 __plugin_name__ = __help_plugin_name__ = "走迷宫"
-__plugin_version__ = __help_version__ = "0.2.2"
+__plugin_version__ = __help_version__ = "0.2.3"
 __plugin_author__ = "T_EtherLeaF <thetapilla@gmail.com>"
 
 __plugin_adapters__ = [OneBotV11Adapter]
@@ -20,12 +20,12 @@ __plugin_usage__ = __usage__ = f'''
 
 游戏开始后通过持续发送若干操作序列解开迷宫，操作序列由若干操作组成
 
-操作格式：{keys[0]}(上)/{keys[2]}(下)/{keys[1]}(左)/{keys[3]}(右)+步数，步数可留空表示1步
-    例如：{keys[3]}, {keys[2]}3, {keys[1]}1
+操作格式：{KEYS[0]}(上)/{KEYS[2]}(下)/{KEYS[1]}(左)/{KEYS[3]}(右)+步数，步数可留空表示1步
+    例如：{KEYS[3]}, {KEYS[2]}3, {KEYS[1]}1
 在游戏中，我们定义1步为沿该方向的路径一直走，直到遇见死路或走到岔路口。
 
 操作序列为n(n≥1)个操作组合而成的字符串。
-操作序列示例：{keys[3]}2{keys[2]}3{keys[3]}{keys[0]}2{keys[1]}{keys[2]}2{keys[3]}4
+操作序列示例：{KEYS[3]}2{KEYS[2]}3{KEYS[3]}{KEYS[0]}2{KEYS[1]}{KEYS[2]}2{KEYS[3]}4
 
 游戏过程中不想玩了？
 游戏过程中可随时发送 结束 / quit 以结束游戏并查看参考解法
@@ -38,7 +38,7 @@ __plugin_meta__ = PluginMetadata(
     extra={
         "unique_name": "maze",
         "author": __plugin_author__,
-        "version": "0.2.2",
+        "version": "0.2.3",
         "menu_data": [
             {
                 'func': '开始游戏',
