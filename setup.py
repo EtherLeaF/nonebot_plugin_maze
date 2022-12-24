@@ -6,8 +6,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="nonebot_plugin_maze",
-    version="0.2.3",
-    author="T_EtherLeaF",
+    version="0.2.4",
+    author="EtherLeaF",
     author_email="thetapilla@gmail.com",
     keywords=["pip", "nonebot2", "nonebot", "nonebot_plugin"],
     description="""NoneBot2交互式走迷宫插件""",
@@ -22,10 +22,12 @@ setuptools.setup(
     ],
     include_package_data=True,
     platforms="any",
-    install_requires=['nonebot-adapter-onebot>=2.1.0',
-                      'nonebot2>=2.0.0-beta.2',
-                      'pillow>=9.0.0',
-                      'asyncer>=0.0.1'
-                      ],
+    install_requires=[
+        'nonebot-adapter-onebot>=2.1.0',
+        'nonebot2>=2.0.0-beta.2',
+        'numpy>=1.24.0',
+        'pillow>=9.0.0',
+        'asyncer>=0.0.1'
+    ],
     python_requires=">=3.8"
 )

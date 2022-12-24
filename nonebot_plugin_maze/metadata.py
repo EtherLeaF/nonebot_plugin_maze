@@ -9,7 +9,7 @@ KEYS = load_config()[-1]
 
 # —————————— Metadata below —————————— #
 __plugin_name__ = __help_plugin_name__ = "走迷宫"
-__plugin_version__ = __help_version__ = "0.2.3"
+__plugin_version__ = __help_version__ = "0.2.4"
 __plugin_author__ = "T_EtherLeaF <thetapilla@gmail.com>"
 
 __plugin_adapters__ = [OneBotV11Adapter]
